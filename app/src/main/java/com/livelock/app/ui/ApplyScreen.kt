@@ -1,5 +1,6 @@
 package com.livelock.app.ui
 
+import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.livelock.app.wallpaper.FilamentWallpaperService
 import com.livelock.app.wallpaper.WallpaperApplier
 import java.io.File
 
@@ -72,6 +74,22 @@ fun ApplyScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("알림 접근 권한 설정")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                val intent = Intent("android.service.wallpaper.CHANGE_LIVE_WALLPAPER").apply {
+                    putExtra(
+                        "android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT",
+                        ComponentName(context, FilamentWallpaperService::class.java)
+                    )
+                }
+                runCatching { context.startActivity(intent) }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("3D 캐릭터 라이브 배경 적용")
         }
         Spacer(modifier = Modifier.height(8.dp))
 

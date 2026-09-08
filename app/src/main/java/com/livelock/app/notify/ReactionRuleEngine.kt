@@ -49,21 +49,18 @@ class ReactionRuleEngine(context: Context) {
         }
     }
 
-    fun evaluate(packageName: String, title: String, text: String) {
+    /** 매칭되는 규칙의 애니메이션 인덱스를 반환한다.
+     *  (알림 반응 서비스가 이를 저장하고 월페이퍼가 클립을 전환) */
+    fun evaluate(packageName: String, title: String, text: String): Int {
         for (rule in rules) {
             if (!rule.enabled) continue
-            val matchesApp = rule.appName.isNotEmpty() && packageName.contains(rule.appName)
-            val matchesKeyword = rule.keyword.isNotEmpty() && (title.contains(rule.keyword) || text.contains(rule.keyword))
+            val matchesApp = rule.appName.isNotEmpty() && packageName.contains(rule.appName, ignoreCase = true)
+            val matchesKeyword = rule.keyword.isNotEmpty() && (title.contains(rule.keyword, ignoreCase = true) || text.contains(rule.keyword, ignoreCase = true))
             if (matchesApp || matchesKeyword) {
-                triggerReaction(rule.animationIndex, rule.showBubble, title)
-                return
+                return rule.animationIndex
             }
         }
-        triggerReaction(1, false, null) // default reaction
-    }
-
-    private fun triggerReaction(animationIndex: Int, showBubble: Boolean, text: String?) {
-        // TODO: Send event to wallpaper service
+        return 1 // default reaction
     }
 
     fun getRules(): List<ReactionRule> = rules.toList()
