@@ -71,23 +71,25 @@ class FilamentRenderer(context: Context) {
         }
     }
 
-    fun getAnimationCount(): Int = asset?.animator?.animationCount ?: 0
+    private val animator: Animator? get() = asset?.getInstanceAnimator()
+
+    fun getAnimationCount(): Int = animator?.animationCount ?: 0
 
     fun getAnimationName(index: Int): String = try {
-        asset?.animator?.getAnimationName(index) ?: ""
+        animator?.getAnimationName(index) ?: ""
     } catch (t: Throwable) {
         ""
     }
 
     fun playAnimation(index: Int) {
-        val animator = asset?.animator ?: return
-        if (index < animator.animationCount) {
-            animator.applyAnimation(index, 0f)
+        val a = animator ?: return
+        if (index < a.animationCount) {
+            a.applyAnimation(index, 0f)
         }
     }
 
     fun update(deltaSeconds: Float) {
-        asset?.animator?.updateAnimations(deltaSeconds)
+        animator?.updateAnimations(deltaSeconds)
     }
 
     fun render(nanoTime: Long) {

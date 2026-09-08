@@ -2,7 +2,6 @@ package com.livelock.app.ui
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMedia
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -62,7 +61,7 @@ fun SourceSelectionScreen(
         Button(
             onClick = {
                 imagePicker.launch(
-                    PickVisualMediaRequest(PickVisualMedia.ImageOnly)
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -74,7 +73,7 @@ fun SourceSelectionScreen(
         Button(
             onClick = {
                 videoPicker.launch(
-                    PickVisualMediaRequest(PickVisualMedia.VideoOnly)
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -91,4 +90,5 @@ fun SourceSelectionScreen(
         }
     }
 }
+
 

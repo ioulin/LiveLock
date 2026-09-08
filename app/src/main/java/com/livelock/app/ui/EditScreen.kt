@@ -32,6 +32,7 @@ fun EditScreen(
     videoUri: Uri?,
     onTrimComplete: (File) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var isProcessing by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var trimDuration by remember { mutableFloatStateOf(15f) }
@@ -65,7 +66,7 @@ fun EditScreen(
                         isProcessing = true
                         val outputFile = File.createTempFile("trimmed", ".mp4")
                         VideoTrimmer.trim(
-                            context = androidx.compose.ui.platform.LocalContext.current,
+                            context = context,
                             inputUri = uri,
                             outputFile = outputFile,
                             maxDurationMs = (trimDuration * 1000).toLong()

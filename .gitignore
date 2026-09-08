@@ -43,3 +43,11 @@ captures/
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
+
+# local ci debug
+build_log.txt
+ntfy.json
+*.log
+build-logs.zip
+buildlogs/
+checkrun.json

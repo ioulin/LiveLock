@@ -110,6 +110,6 @@ class VideoWallpaperService : WallpaperService() {
         }
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {}
-        override fun onDraw(canvas: Canvas?, holder: SurfaceHolder?) {}
+        override fun onDrawWallpaper(canvas: Canvas?) {}
     }
 }

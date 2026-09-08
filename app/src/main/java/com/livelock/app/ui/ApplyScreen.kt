@@ -77,7 +77,7 @@ fun ApplyScreen(
 
         Button(
             onClick = {
-                val intent = Intent(android.provider.Settings.ACTION_WALLPAPER_SETTINGS)
+                val intent = Intent("android.settings.WALLPAPER_SETTINGS")
                 context.startActivity(intent)
             },
             modifier = Modifier.fillMaxWidth()

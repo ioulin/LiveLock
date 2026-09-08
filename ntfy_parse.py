@@ -1,19 +1,27 @@
 import json, urllib.request, os
 
 BASE = '/data/user/0/com.orailnoor.droiddesk/files/home/make4'
-d = json.load(open(BASE + '/ntfy.json'))
-evs = d if isinstance(d, list) else d.get('events', [])
+lines = open(BASE + '/ntfy.json').read().strip().splitlines()
 url = None
-for e in evs:
+title = None
+count = 0
+for ln in lines:
+    try:
+        e = json.loads(ln)
+    except Exception:
+        continue
+    if e.get('event') != 'message':
+        continue
+    count += 1
+    title = e.get('title')
     att = e.get('attachment') or {}
     if att.get('url'):
         url = att['url']
-        break
 if url:
     try:
         urllib.request.urlretrieve(url, BASE + '/build_log.txt')
-        print('LOG_DOWNLOADED', os.path.getsize(BASE + '/build_log.txt'), 'bytes from', url)
+        print('LOG_DOWNLOADED', os.path.getsize(BASE + '/build_log.txt'), 'bytes | title:', title)
     except Exception as ex:
         print('DOWNLOAD_FAIL', ex, url)
 else:
-    print('NO_ATTACHMENT events:', len(evs))
+    print('NO_ATTACHMENT messages:', count)
