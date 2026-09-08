@@ -84,3 +84,16 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Publish APK to GitHub Release (nightly)
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/debug/*.apk
+          tag_name: nightly
+          name: LiveLock Nightly
+          body: |
+            자동 빌드 APK (debug)
+            SHA: ${{ github.sha }}
+          fail_on_unmatched_files: false
+          target_commitish: main
