@@ -34,10 +34,10 @@ fun MainScreen() {
 
     // 하단 탭 정의 (화면 ↔ 라벨)
     val tabs = listOf(
-        Screen.SOURCE -> "소스 선택",
-        Screen.EDIT -> "편집",
-        Screen.APPLY -> "배경 적용",
-        Screen.SETTINGS -> "설정"
+        Pair(Screen.SOURCE, "소스 선택"),
+        Pair(Screen.EDIT, "편집"),
+        Pair(Screen.APPLY, "배경 적용"),
+        Pair(Screen.SETTINGS, "설정")
     )
 
     Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
@@ -77,7 +77,9 @@ fun MainScreen() {
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            for ((screen, label) in tabs) {
+            for (tab in tabs) {
+                val screen = tab.first
+                val label = tab.second
                 Button(
                     onClick = { currentScreen = screen },
                     modifier = Modifier.padding(4.dp)
