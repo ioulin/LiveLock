@@ -5,11 +5,10 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
-import androidx.media3.transformer.Effects
+import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
 import java.io.File
-import java.util.concurrent.CountDownLatch
 
 object VideoTrimmer {
 
@@ -33,7 +32,7 @@ object VideoTrimmer {
                     override fun onError(
                         composition: Composition,
                         result: ExportResult,
-                        exception: Exception
+                        exception: ExportException
                     ) {
                         onComplete(false)
                     }

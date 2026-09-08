@@ -43,6 +43,7 @@ object MediaStoreSaver {
                 put(MediaStore.Audio.Media.IS_PENDING, 1)
             }
         }
+        val resolver = context.contentResolver
         val uri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values) ?: return null
         context.contentResolver.openOutputStream(uri)?.use { os ->
             FileInputStream(sourceFile).use { it.copyTo(os) }
