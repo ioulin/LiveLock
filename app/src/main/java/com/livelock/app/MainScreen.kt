@@ -41,6 +41,25 @@ fun MainScreen() {
     )
 
     Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+        // 상단 탭 바
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            for (tab in tabs) {
+                val screen = tab.first
+                val label = tab.second
+                Button(
+                    onClick = { currentScreen = screen },
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Text(label)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         // 본문: 현재 화면
         when (currentScreen) {
             Screen.SOURCE -> {
@@ -70,24 +89,7 @@ fun MainScreen() {
             }
         }
 
-        Spacer(modifier = Modifier.fillMaxHeight())
-
-        // 하단 탭 바
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            for (tab in tabs) {
-                val screen = tab.first
-                val label = tab.second
-                Button(
-                    onClick = { currentScreen = screen },
-                    modifier = Modifier.padding(4.dp)
-                ) {
-                    Text(label)
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
