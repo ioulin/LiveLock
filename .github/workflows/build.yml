@@ -28,10 +28,37 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build Debug APK
-        run: gradle :app:assembleDebug --no-daemon
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --no-daemon 2>&1 | tee build_log.txt
 
       - name: Run Unit Tests
-        run: gradle :app:testDebugUnitTest --no-daemon
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle :app:testDebugUnitTest --no-daemon 2>&1 | tee test_log.txt
+
+      - name: Dump build log tail to summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Build log tail"
+            echo '```'
+            tail -n 150 build_log.txt 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build_log.txt
+            test_log.txt
+          if-no-files-found: ignore
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
