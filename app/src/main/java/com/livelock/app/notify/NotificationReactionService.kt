@@ -1,18 +1,32 @@
 package com.livelock.app.notify
 
+import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
 class NotificationReactionService : NotificationListenerService() {
 
+    private var ruleEngine: ReactionRuleEngine? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        ruleEngine = ReactionRuleEngine(this)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         sbn ?: return
         val packageName = sbn.packageName ?: return
-        // TODO: 앱별/키워드별 반응 규칙 평가 후 월페이퍼에 이벤트 전달
+        val extras = sbn.notification.extras
+        val title = extras.getCharSequence("android.title")?.toString() ?: ""
+        val text = extras.getCharSequence("android.text")?.toString() ?: ""
+
+        ruleEngine?.evaluate(packageName, title, text)
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        super.onNotificationRemoved(sbn)
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        requestRebind(android.content.ComponentName(this, NotificationReactionService::class.java))
     }
 }
+

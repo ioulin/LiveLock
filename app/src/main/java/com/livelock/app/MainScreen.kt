@@ -6,8 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.livelock.app.ui.ApplyScreen
+import com.livelock.app.ui.EditScreen
+import com.livelock.app.ui.SettingsScreen
+import com.livelock.app.ui.SourceSelectionScreen
 
-enum class Screen { SOURCE, APPLY }
+enum class Screen { SOURCE, EDIT, APPLY, SETTINGS }
 
 @Composable
 fun MainScreen() {
@@ -24,6 +28,12 @@ fun MainScreen() {
                 onAudioPicked = { selectedAudioUri = it }
             )
         }
+        Screen.EDIT -> {
+            EditScreen(
+                videoUri = selectedVideoUri,
+                onTrimComplete = { currentScreen = Screen.APPLY }
+            )
+        }
         Screen.APPLY -> {
             ApplyScreen(
                 imageFile = null,
@@ -33,6 +43,10 @@ fun MainScreen() {
                 onOpenNotificationSettings = {}
             )
         }
+        Screen.SETTINGS -> {
+            SettingsScreen()
+        }
     }
 }
+
 

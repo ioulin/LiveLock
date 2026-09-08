@@ -22,22 +22,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          gradle-version: '8.7'
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: gradle :app:assembleDebug --no-daemon
 
       - name: Run Unit Tests
-        run: ./gradlew test --no-daemon
+        run: gradle :app:testDebugUnitTest --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
