@@ -39,7 +39,14 @@ class FilamentRenderer(context: Context) {
     init {
         view.scene = scene
         view.camera = camera
-        view.setClearColor(0.13f, 0.18f, 0.30f, 1f)
+
+        // 배경 클리어 색 설정
+        renderer.setClearOptions(
+            Renderer.ClearOptions().apply {
+                clearColor = Float4(0.13f, 0.18f, 0.30f, 1f)
+                clear = true
+            }
+        )
 
         val lightManager = engine.lightManager
         LightManager.Builder(LightManager.Type.DIRECTIONAL)
@@ -91,7 +98,7 @@ fun setSurfaceView(surfaceView: SurfaceView) {
     private fun updateProjection(width: Int, height: Int) {
         if (height > 0) {
             val aspect = width.toDouble() / height.toDouble()
-            camera.setProjection(45.0, aspect, 0.1, 100.0, Camera.Projection.VERTICAL)
+            camera.setProjection(45.0, aspect, 0.1, 100.0, Camera.Projection.PERSPECTIVE)
             camera.lookAt(
                 0.0, 1.1, 3.4,
                 0.0, 0.9, 0.0,
