@@ -53,6 +53,10 @@ class FilamentRenderer(context: Context) {
         }
     }
 
+    private var animator: Animator? = null
+    private var currentAnim = -1
+    private var animTime = 0f
+
     fun loadModel(file: File) {
         val provider = UbershaderProvider(engine)
         assetLoader = AssetLoader(engine, provider, EntityManager.get())
@@ -68,10 +72,14 @@ class FilamentRenderer(context: Context) {
                 resourceLoader?.loadResources(a)
                 a.entities.forEach { scene.addEntity(it) }
             }
+            animator = try {
+                asset?.getInstance()?.animator
+                    ?: assetLoader?.createInstance(asset!!)?.animator
+            } catch (t: Throwable) {
+                null
+            }
         }
     }
-
-    private val animator: Animator? get() = asset?.getInstanceAnimator()
 
     fun getAnimationCount(): Int = animator?.animationCount ?: 0
 
@@ -84,12 +92,20 @@ class FilamentRenderer(context: Context) {
     fun playAnimation(index: Int) {
         val a = animator ?: return
         if (index < a.animationCount) {
+            currentAnim = index
+            animTime = 0f
             a.applyAnimation(index, 0f)
         }
     }
 
     fun update(deltaSeconds: Float) {
-        animator?.updateAnimations(deltaSeconds)
+        val a = animator ?: return
+        if (currentAnim in 0 until a.animationCount) {
+            animTime += deltaSeconds
+            val dur = a.getAnimationDuration(currentAnim)
+            val t = if (dur > 0f) animTime % dur else animTime
+            a.applyAnimation(currentAnim, t)
+        }
     }
 
     fun render(nanoTime: Long) {

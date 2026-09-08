@@ -41,6 +41,7 @@ class VideoWallpaperService : WallpaperService() {
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .build()
                 )
+                surfaceHolder?.surface?.let { setSurface(it) }
                 isLooping = true
                 setDataSource(uri)
                 prepare()
@@ -110,6 +111,5 @@ class VideoWallpaperService : WallpaperService() {
         }
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {}
-        override fun onDrawWallpaper(canvas: Canvas?) {}
     }
 }
