@@ -11,13 +11,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 
-/**
- * Filament 기반 3D 캐릭터 렌더러.
- * - GLB 로드 + 리소스 로딩
- * - 애니메이션 클립 재생 (applyAnimation 기반 수동 시간 진행)
- * - 방향광 조명 + 카메라 + 클리어 색
- * - SurfaceHolder/SurfaceView 둘 다 지원 (월페이퍼/미리보기 공용)
- */
 class FilamentRenderer(context: Context) {
     private val engine: Engine = Engine.create()
     private val renderer: Renderer = engine.createRenderer()
@@ -32,78 +25,53 @@ class FilamentRenderer(context: Context) {
     private var animator: Animator? = null
     private var currentAnim = -1
     private var animTime = 0f
-
-    // 방향광(태양광)
+    private var surface: Surface? = null
     private val lightEntity = engine.entityManager.create()
 
     init {
         view.scene = scene
         view.camera = camera
-
-        // 배경 클리어 색 설정
-        renderer.setClearOptions(
-            Renderer.ClearOptions().apply {
-                clearColor = floatArrayOf(0.13f, 0.18f, 0.30f, 1f)
-                clear = true
-            }
-        )
-
-        val lightManager = engine.lightManager
+        renderer.setClearOptions(Renderer.ClearOptions().apply {
+            clearColor = floatArrayOf(0.13f, 0.18f, 0.30f, 1f)
+            clear = true
+        })
         LightManager.Builder(LightManager.Type.DIRECTIONAL)
-            .castShadows(false)
-            .direction(-0.5f, -0.8f, -0.4f)
-            .color(1f, 0.97f, 0.92f)
-            .intensity(110_000f)
+            .castShadows(false).direction(-0.5f, -0.8f, -0.4f)
+            .color(1f, 0.97f, 0.92f).intensity(110_000f)
             .build(engine, lightEntity)
         scene.addEntity(lightEntity)
     }
-fun setSurfaceView(surfaceView: SurfaceView) {
+
+    fun setSurfaceView(surfaceView: SurfaceView) {
         uiHelper = UiHelper(UiHelper.ContextErrorPolicy.DONT_CHECK).apply {
             renderCallback = object : UiHelper.RendererCallback {
-                override fun onNativeWindowChanged(surface: Surface) {
+                override fun onNativeWindowChanged(s: Surface) {
                     swapChain?.let { engine.destroySwapChain(it) }
-                    swapChain = engine.createSwapChain(surface)
+                    swapChain = engine.createSwapChain(s)
                 }
                 override fun onDetachedFromSurface() {
-                    swapChain?.let { engine.destroySwapChain(it) }
-                    swapChain = null
+                    swapChain?.let { engine.destroySwapChain(it) }; swapChain = null
                 }
-                override fun onResized(width: Int, height: Int) {
-                    updateProjection(width, height)
-                }
+                override fun onResized(w: Int, h: Int) { updateProjection(w, h) }
             }
             attachTo(surfaceView)
         }
     }
 
-    fun setSurfaceHolder(holder: SurfaceHolder) {
-        uiHelper = UiHelper(UiHelper.ContextErrorPolicy.DONT_CHECK).apply {
-            renderCallback = object : UiHelper.RendererCallback {
-                override fun onNativeWindowChanged(surface: Surface) {
-                    swapChain?.let { engine.destroySwapChain(it) }
-                    swapChain = engine.createSwapChain(surface)
-                }
-                override fun onDetachedFromSurface() {
-                    swapChain?.let { engine.destroySwapChain(it) }
-                    swapChain = null
-                }
-                override fun onResized(width: Int, height: Int) {
-                    updateProjection(width, height)
-                }
-            }
-            attachTo(holder)
-        }
+    fun setSurfaceHolder(holder: SurfaceHolder) { setSurface(holder.surface) }
+
+    fun setSurface(s: Surface?) {
+        surface = s
+        swapChain?.let { engine.destroySwapChain(it) }
+        swapChain = if (s?.isValid == true) engine.createSwapChain(s) else null
+        s?.let { if (it.width() > 0 && it.height() > 0) updateProjection(it.width(), it.height()) }
     }
 
     private fun updateProjection(width: Int, height: Int) {
         if (height > 0) {
             val aspect = width.toDouble() / height.toDouble()
             camera.setProjection(45.0, aspect, 0.1, 100.0, Camera.Fov.VERTICAL)
-            camera.lookAt(
-                0.0, 1.1, 3.4,
-                0.0, 0.9, 0.0,
-                0.0, 1.0, 0.0
-            )
+            camera.lookAt(0.0, 1.1, 3.4, 0.0, 0.9, 0.0, 0.0, 1.0, 0.0)
         }
     }
 
@@ -112,64 +80,41 @@ fun setSurfaceView(surfaceView: SurfaceView) {
         assetLoader = AssetLoader(engine, provider, EntityManager.get())
         resourceLoader = ResourceLoader(engine)
         scene.addEntity(lightEntity)
-
         FileInputStream(file).use { fis ->
             val bytes = fis.readBytes()
-            val buffer = ByteBuffer.allocateDirect(bytes.size)
-            buffer.put(bytes)
-            buffer.flip()
+            val buffer = ByteBuffer.allocateDirect(bytes.size).apply { put(bytes); flip() }
             asset = assetLoader?.createAsset(buffer)
-            asset?.let { a ->
-                resourceLoader?.loadResources(a)
-                a.entities.forEach { scene.addEntity(it) }
-            }
-            animator = try {
-                asset?.getInstance()?.animator
-                    ?: assetLoader?.createInstance(asset!!)?.animator
-            } catch (t: Throwable) {
-                null
-            }
+            asset?.let { a -> resourceLoader?.loadResources(a); a.entities.forEach { scene.addEntity(it) } }
+            animator = try { asset?.getInstance()?.animator ?: assetLoader?.createInstance(asset!!)?.animator } catch (t: Throwable) { null }
         }
     }
 
     fun getAnimationCount(): Int = animator?.animationCount ?: 0
-
-    fun getAnimationName(index: Int): String = try {
-        animator?.getAnimationName(index) ?: ""
-    } catch (t: Throwable) {
-        ""
-    }
+    fun getAnimationName(index: Int): String = try { animator?.getAnimationName(index) ?: "" } catch (t: Throwable) { "" }
 
     fun playAnimation(index: Int) {
         val a = animator ?: return
-        if (index in 0 until a.animationCount) {
-            currentAnim = index
-            animTime = 0f
-            a.applyAnimation(index, 0f)
-        }
+        if (index in 0 until a.animationCount) { currentAnim = index; animTime = 0f; a.applyAnimation(index, 0f) }
     }
 
-    fun update(deltaSeconds: Float) {
+    fun update(dt: Float) {
         val a = animator ?: return
         if (currentAnim in 0 until a.animationCount) {
-            animTime += deltaSeconds
+            animTime += dt
             val dur = a.getAnimationDuration(currentAnim)
-            val t = if (dur > 0f) animTime % dur else animTime
-            a.applyAnimation(currentAnim, t)
+            a.applyAnimation(currentAnim, if (dur > 0f) animTime % dur else animTime)
         }
     }
 
     fun render(nanoTime: Long) {
         val sc = swapChain ?: return
-        if (renderer.beginFrame(sc, nanoTime)) {
-            renderer.render(view)
-            renderer.endFrame()
-        }
+        if (renderer.beginFrame(sc, nanoTime)) { renderer.render(view); renderer.endFrame() }
     }
 
     fun destroy() {
         asset?.let { assetLoader?.destroyAsset(it) }
         uiHelper?.detach()
+        if (swapChain != null) engine.destroySwapChain(swapChain!!)
         engine.destroyEntity(lightEntity)
         engine.destroyRenderer(renderer)
         engine.destroyScene(scene)
