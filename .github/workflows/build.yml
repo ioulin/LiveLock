@@ -63,6 +63,12 @@ jobs:
           git commit -m "ci log" || echo "no log to commit"
           git push origin HEAD:ci-logs --force
 
+      - name: Send build log to ntfy (external)
+        if: failure()
+        shell: bash
+        run: |
+          curl -s -T build_log.txt -H "Filename: build_log.txt" -H "Title: LiveLock CI build log" https://ntfy.sh/livelockcilog7k2q9x || true
+
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
